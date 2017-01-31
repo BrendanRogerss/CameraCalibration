@@ -2,16 +2,52 @@ import CheckError
 import copy
 import scipy.optimize
 import numpy as np
+import math
 
 
 def gradientDescent(M, lam, cx, cy):
-    x0 = np.array([lam, cx, cy])
+    #x0 = np.array([lam, cx, cy])
+
+    min = math.pi - math.pi/1000
+    max = math.pi + math.pi/1000
+
+    bounds = [(min, max), (-100, 100), (-20, 20)]
     tup = tuple(([M]))
-    res = scipy.optimize.fmin_powell(CheckError.checkError, x0, args=(tup))
+    res = scipy.optimize.differential_evolution(CheckError.checkError, bounds, tup)
     return res
 
 
-def badGradientDescent(M, lam, cx, cy):
+def fprime(x0, M):
+    lam = x0[0]
+    cx = x0[1]
+    cy = x0[2]
+
+    results = []
+
+    # todo: code better
+    deltaLam = lam / 100
+    error1 = CheckError.checkError([lam + deltaLam, cx, cy], M)
+    error2 = CheckError.checkError([lam - deltaLam, cx, cy], M)
+    results.append(gradient(error1, error2, deltaLam))
+
+    deltaCx = cx / 100
+    error1 = CheckError.checkError([lam, cx + deltaCx, cy], M)
+    error2 = CheckError.checkError([lam, cx - deltaCx, cy], M)
+    results.append(gradient(error1, error2, deltaCx))
+
+    deltaCy = cy / 100
+    error1 = CheckError.checkError([lam, cx, cy + deltaCy], M)
+    error2 = CheckError.checkError([lam, cx, cy - deltaCy], M)
+    results.append(gradient(error1, error2, deltaCy))
+
+    return np.array(results)
+
+
+def gradient(error1, error2, delta):
+    return ((error1 - error2) / 2 * delta)
+
+
+def hillClimbing(M, lam, cx, cy):
     currentValues = [lam, cx, cy]
     smallestValues = []
     smallestError = float("inf")

@@ -5,7 +5,10 @@ from PIL import Image, ImageDraw
 import math
 
 
-def verifyValues(M, lam, cx, cy):
+def verifyValues(V, M):
+    lam = V[0]
+    cx = V[1]
+    cy = V[2]
 
     M = CheckError.centerImagePixels(M, cx, cy)
     matrix = np.zeros((len(M), len(M[0]), 3))
@@ -17,12 +20,12 @@ def verifyValues(M, lam, cx, cy):
     draw = ImageDraw.Draw(image)
 
     for i in matrix:
-        for j in range(len(i)-1):
-            x1 = (i[j][0]) * 100 + 1000
-            y1 = (i[j][1]) * 100 + 1000
+        for j in range(len(i) - 1):
+            x1 = (i[j][0]) * 600 + 1000
+            y1 = (i[j][1]) * 600 + 1000
 
-            x2 = i[j + 1][0] * 100 + 1000
-            y2 = i[j + 1][1] * 100 + 1000
+            x2 = i[j + 1][0] * 600 + 1000
+            y2 = i[j + 1][1] * 600 + 1000
 
             if x1 < 2000 and x1 > 0 and y1 < 2000 and y1 > 0:
                 if x2 < 2000 and x2 > 0 and y2 < 2000 and y2 > 0:
@@ -43,9 +46,13 @@ def buildRGBArray(filename):
     return M
 
 
-def makeImage(filename, lam, cx, cy):
+def makeImage(V, filename):
+    lam = V[0]
+    cx = V[1]
+    cy = V[2]
+
     M = buildRGBArray(filename)
-    image = Image.new("RGB", (2000, 2000), "white")
+    image = Image.new("RGB", (2000, 2000), "black")
     pix = image.load()
     error = 0
     for i in range(1, len(M)):
@@ -53,7 +60,7 @@ def makeImage(filename, lam, cx, cy):
             ix, iy = CheckError.ImageToCam(i, j, cx, cy)
             x, y, z = projectPixel(lam, ix, iy)
 
-            #x, y = CheckError.CamToImage(x, y, cx, cy)
+            # x, y = CheckError.CamToImage(x, y, cx, cy)
             x = x * 100 + 1000
             y = y * 100 + 1000
 
@@ -110,7 +117,7 @@ def displayVideoFrame(path, frameNumber, rows, cols):
                 # Draw and display the corners
 
                 cv2.drawChessboardCorners(img, (cols, rows), corners, ret)
-                cv2.imwrite('frame' + str(i) + '.jpg', img)
+                cv2.imwrite('frames/frame' + str(i) + '.jpg', img)
                 # else:
                 # print("pattern not found in image: " + str(i) + "\nSkipping to image: " + str(i + 10))
                 # i += 10
